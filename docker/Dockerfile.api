@@ -1,6 +1,6 @@
 # Base stage
 FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat openssl1.1-compat
+RUN apk add --no-cache libc6-compat openssl
 RUN apk update
 
 # Dependencies stage
@@ -23,7 +23,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Generate Prisma Client
+# Generate Prisma Client with correct binary target
+ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
 RUN npx prisma generate --schema=./packages/database/prisma/schema.prisma
 
 # Build the database package
