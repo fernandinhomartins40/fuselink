@@ -26,6 +26,9 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate --schema=./packages/database/prisma/schema.prisma
 
+# Build the database package
+RUN npm run build --workspace=packages/database
+
 # Build the API
 RUN npm run build --workspace=apps/api
 
