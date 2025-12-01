@@ -325,11 +325,11 @@ export const getDevices = async (req: AuthRequest, res: Response, next: NextFunc
       _count: true,
     })
 
-    const total = devices.reduce((sum, d) => sum + d._count, 0)
+    const total = devices.reduce((sum: number, d: { _count: number }) => sum + d._count, 0)
 
     res.status(200).json({
       success: true,
-      data: devices.map((d) => ({
+      data: devices.map((d: { device: string | null; _count: number }) => ({
         device: d.device,
         count: d._count,
         percentage: total > 0 ? Math.round((d._count / total) * 100 * 100) / 100 : 0,

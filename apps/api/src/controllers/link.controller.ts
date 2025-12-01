@@ -254,11 +254,11 @@ export const getLinkAnalytics = async (
         totalClicks,
         uniqueClicks,
         clicksOverTime,
-        referrers: referrers.map((r) => ({
+        referrers: referrers.map((r: { referrer: string | null; _count: number }) => ({
           referrer: r.referrer,
           count: r._count,
         })),
-        devices: devices.map((d) => ({
+        devices: devices.map((d: { device: string | null; _count: number }) => ({
           device: d.device,
           count: d._count,
         })),
