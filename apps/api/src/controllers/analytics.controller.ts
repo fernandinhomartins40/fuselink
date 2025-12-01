@@ -259,11 +259,11 @@ export const getReferrers = async (req: AuthRequest, res: Response, next: NextFu
       take: 10,
     })
 
-    const total = referrers.reduce((sum, r) => sum + r._count, 0)
+    const total = referrers.reduce((sum: number, r: { _count: number }) => sum + r._count, 0)
 
     res.status(200).json({
       success: true,
-      data: referrers.map((r) => ({
+      data: referrers.map((r: { referrer: string | null; _count: number }) => ({
         referrer: r.referrer,
         count: r._count,
         percentage: total > 0 ? Math.round((r._count / total) * 100 * 100) / 100 : 0,
@@ -295,11 +295,11 @@ export const getLocations = async (req: AuthRequest, res: Response, next: NextFu
       take: 10,
     })
 
-    const total = locations.reduce((sum, l) => sum + l._count, 0)
+    const total = locations.reduce((sum: number, l: { _count: number }) => sum + l._count, 0)
 
     res.status(200).json({
       success: true,
-      data: locations.map((l) => ({
+      data: locations.map((l: { country: string | null; city: string | null; _count: number }) => ({
         country: l.country,
         city: l.city,
         count: l._count,
