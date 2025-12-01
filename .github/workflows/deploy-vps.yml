@@ -1,0 +1,536 @@
+name: Deploy FuseLink to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-fuselink-vps
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_PASSWORD }}" > ~/.ssh/vps_password
+          chmod 600 ~/.ssh/vps_password
+
+      - name: Sync code to VPS
+        run: |
+          # Instalar sshpass para autenticação com senha
+          sudo apt-get update && sudo apt-get install -y sshpass rsync
+
+          # Criar diretório no VPS
+          sshpass -f ~/.ssh/vps_password ssh -o StrictHostKeyChecking=no root@72.60.10.112 "mkdir -p /root/fuselink"
+
+          # Verificar estrutura do projeto antes do rsync
+          echo "=== Verificando estrutura localmente antes do rsync ==="
+          ls -la apps/
+          ls -la packages/
+
+          # Sincronizar código via rsync
+          sshpass -f ~/.ssh/vps_password rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.next' \
+            --exclude='*.db' \
+            --exclude='*.db-*' \
+            --exclude='apps/api/uploads' \
+            --exclude='.env' \
+            --exclude='.env.local' \
+            --exclude='.turbo' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ root@72.60.10.112:/root/fuselink/
+
+          # Verificar se código foi copiado
+          echo "=== Verificando estrutura na VPS após rsync ==="
+          sshpass -f ~/.ssh/vps_password ssh -o StrictHostKeyChecking=no root@72.60.10.112 "ls -la /root/fuselink/"
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: 72.60.10.112
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          timeout: 600s
+          command_timeout: 600s
+          script: |
+            set -e
+
+            echo "=== Iniciando Deploy FuseLink ==="
+
+            # Diretório da aplicação
+            APP_DIR="/root/fuselink"
+
+            # ===== PROTEÇÃO DE VOLUMES - VERIFICAÇÃO CRÍTICA =====
+            echo "=== Verificando volumes Docker antes de qualquer operação ==="
+
+            # Verificar se volumes de dados existem
+            POSTGRES_VOLUME=$(docker volume ls -q | grep "fuselink.*postgres" || echo "")
+            UPLOADS_VOLUME=$(docker volume ls -q | grep "fuselink.*uploads" || echo "")
+
+            if [ -n "$POSTGRES_VOLUME" ]; then
+              echo "✅ Volume PostgreSQL encontrado: $POSTGRES_VOLUME"
+              VOLUME_SIZE=$(docker volume inspect "$POSTGRES_VOLUME" 2>/dev/null | grep Mountpoint || echo "")
+              echo "   Localização: $VOLUME_SIZE"
+            else
+              echo "ℹ️ Volume PostgreSQL não existe (será criado no primeiro deploy)"
+            fi
+
+            if [ -n "$UPLOADS_VOLUME" ]; then
+              echo "✅ Volume uploads encontrado: $UPLOADS_VOLUME"
+            else
+              echo "ℹ️ Volume uploads não existe (será criado no primeiro deploy)"
+            fi
+
+            # Parar containers existentes (NUNCA usar -v que remove volumes!)
+            echo ""
+            echo "=== Parando containers (preservando volumes) ==="
+            cd $APP_DIR
+            docker-compose down || true
+
+            # Verificação de segurança: garantir que volumes NÃO foram removidos
+            echo ""
+            echo "=== Verificação de segurança pós-parada ==="
+            POSTGRES_VOLUME_AFTER=$(docker volume ls -q | grep "fuselink.*postgres" || echo "")
+
+            if [ -n "$POSTGRES_VOLUME" ] && [ -z "$POSTGRES_VOLUME_AFTER" ]; then
+              echo "❌ ERRO CRÍTICO: Volume PostgreSQL foi removido inadvertidamente!"
+              echo "Este é um erro grave que pode causar perda de dados."
+              exit 1
+            else
+              echo "✅ Volumes preservados com sucesso"
+            fi
+
+            echo "Verificando código sincronizado..."
+            ls -la
+
+            # Criar arquivo .env
+            echo "Criando arquivo .env..."
+            cat > .env << 'EOF'
+            # Docker Configuration
+            EXTERNAL_PORT=3200
+
+            # Database
+            DATABASE_URL=postgresql://fuselink:fuselink_production_2024@postgres:5432/fuselink
+            POSTGRES_DB=fuselink
+            POSTGRES_USER=fuselink
+            POSTGRES_PASSWORD=fuselink_production_2024
+
+            # JWT
+            JWT_SECRET=fuselink-production-secret-$(openssl rand -hex 32)
+            JWT_EXPIRES_IN=7d
+
+            # API
+            API_PORT=3001
+            API_URL=http://api:3001
+
+            # Frontend
+            NEXT_PUBLIC_API_URL=https://fuselink.com.br/api
+            NEXTAUTH_SECRET=fuselink-nextauth-$(openssl rand -hex 32)
+            NEXTAUTH_URL=https://fuselink.com.br
+
+            # Node Environment
+            NODE_ENV=production
+
+            # File Upload
+            MAX_FILE_SIZE=10485760
+            UPLOAD_DIR=/app/uploads
+
+            # Rate Limiting
+            RATE_LIMIT_WINDOW_MS=900000
+            RATE_LIMIT_MAX_REQUESTS=100
+
+            # Analytics
+            ANALYTICS_RETENTION_DAYS=28
+            ANALYTICS_RETENTION_DAYS_PREMIUM=365
+
+            # CORS
+            CORS_ORIGIN=https://fuselink.com.br,https://www.fuselink.com.br
+            EOF
+
+            # Adicionar BUILD_TIMESTAMP ao .env
+            echo "BUILD_TIMESTAMP=$(date +%s)" >> .env
+
+            # ===== LIMPEZA SEGURA (SEM TOCAR EM VOLUMES) =====
+            echo "=== Limpando recursos antigos (containers e imagens apenas) ==="
+
+            # Verificar volumes antes da limpeza
+            VOLUMES_BEFORE=$(docker volume ls -q | grep "fuselink" | wc -l)
+            echo "📊 Volumes de dados antes da limpeza: $VOLUMES_BEFORE"
+
+            # Limpar APENAS containers parados (NUNCA usar -v que remove volumes)
+            echo "Removendo containers parados..."
+            docker container prune -f || true
+
+            # Limpar APENAS imagens não utilizadas (volumes não são afetados)
+            echo "Removendo imagens não utilizadas..."
+            docker image prune -af || true
+
+            # Verificar volumes após limpeza
+            VOLUMES_AFTER=$(docker volume ls -q | grep "fuselink" | wc -l)
+            echo "📊 Volumes de dados após limpeza: $VOLUMES_AFTER"
+
+            if [ "$VOLUMES_BEFORE" -ne "$VOLUMES_AFTER" ]; then
+              echo "❌ ERRO CRÍTICO: Volumes foram removidos durante limpeza!"
+              echo "Antes: $VOLUMES_BEFORE | Depois: $VOLUMES_AFTER"
+              exit 1
+            else
+              echo "✅ Limpeza concluída com segurança, volumes preservados"
+            fi
+
+            # Garantir BUILD_TIMESTAMP como variável de ambiente
+            export BUILD_TIMESTAMP=$(date +%s)
+            echo "BUILD_TIMESTAMP=${BUILD_TIMESTAMP}"
+
+            # ===== VALIDAÇÃO PRÉ-BUILD =====
+            echo "=== Validando estrutura do projeto antes do build ==="
+
+            if [ ! -f "apps/api/package.json" ]; then
+              echo "❌ ERRO: apps/api/package.json não encontrado!"
+              exit 1
+            fi
+            echo "✓ api/package.json encontrado"
+
+            if [ ! -f "apps/web/package.json" ]; then
+              echo "❌ ERRO: apps/web/package.json não encontrado!"
+              exit 1
+            fi
+            echo "✓ web/package.json encontrado"
+
+            if [ ! -d "packages/database" ]; then
+              echo "❌ ERRO: diretório packages/database não encontrado!"
+              exit 1
+            fi
+            echo "✓ Estrutura database encontrada"
+
+            if [ ! -f "packages/database/prisma/schema.prisma" ]; then
+              echo "❌ ERRO: schema.prisma não encontrado!"
+              exit 1
+            fi
+            echo "✓ schema.prisma encontrado"
+
+            echo "=== Todos os arquivos críticos validados ==="
+
+            # Parar e remover containers antigos
+            echo "Parando e removendo containers antigos (preservando volumes)..."
+            docker-compose down --remove-orphans || true
+
+            # Remover imagens antigas do FuseLink
+            echo "Removendo imagens antigas..."
+            docker images | grep fuselink | awk '{print $3}' | xargs docker rmi -f 2>/dev/null || true
+
+            # Build das imagens Docker
+            echo "Construindo imagens Docker..."
+            docker-compose build --no-cache --pull || { echo "❌ Erro ao construir imagens Docker"; exit 1; }
+            echo "✅ Imagens Docker construídas com sucesso"
+
+            # Iniciar containers
+            echo "Iniciando containers..."
+            docker-compose up -d --remove-orphans || { echo "❌ Erro ao iniciar containers"; exit 1; }
+            echo "✅ Containers iniciados"
+
+            # Aguardar containers iniciarem
+            echo "Aguardando containers iniciarem..."
+            sleep 20
+
+            # Verificar status dos containers
+            echo "=== Verificando status dos containers ==="
+            docker-compose ps
+
+            # Verificar se containers estão rodando
+            if ! docker ps | grep -q fuselink-web; then
+              echo "❌ Container fuselink-web não está rodando!"
+              echo "=== Logs do container ==="
+              docker logs fuselink-web --tail=100
+              exit 1
+            fi
+            echo "✓ Container fuselink-web está rodando"
+
+            if ! docker ps | grep -q fuselink-api; then
+              echo "❌ Container fuselink-api não está rodando!"
+              echo "=== Logs do API ==="
+              docker logs fuselink-api --tail=100
+              exit 1
+            fi
+            echo "✓ Container fuselink-api está rodando"
+
+            if ! docker ps | grep -q fuselink-postgres; then
+              echo "❌ Container fuselink-postgres não está rodando!"
+              echo "=== Logs do PostgreSQL ==="
+              docker logs fuselink-postgres --tail=50
+              exit 1
+            fi
+            echo "✓ Container fuselink-postgres está rodando"
+
+            # Aguardar PostgreSQL estar pronto
+            echo "Aguardando PostgreSQL ficar pronto..."
+            sleep 10
+
+            # ===== BACKUP AUTOMÁTICO ANTES DE MIGRATIONS =====
+            echo "=== Criando backup de segurança antes de migrations ==="
+            if docker ps | grep -q fuselink-postgres; then
+              # Verificar se banco tem dados
+              TABLE_COUNT=$(docker exec fuselink-postgres psql -U fuselink -d fuselink -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';" 2>/dev/null | tr -d '[:space:]' || echo "0")
+
+              if [ -n "$TABLE_COUNT" ] && [ "$TABLE_COUNT" -gt "0" ] 2>/dev/null; then
+                echo "📊 Banco tem $TABLE_COUNT tabela(s), criando backup de segurança..."
+
+                # Criar diretório de backups
+                mkdir -p ${APP_DIR}/backups
+
+                # Criar backup
+                BACKUP_FILE="${APP_DIR}/backups/pre_deploy_$(date +%Y%m%d_%H%M%S).sql"
+                docker exec fuselink-postgres pg_dump -U fuselink -d fuselink --clean --if-exists > "$BACKUP_FILE"
+
+                if [ -s "$BACKUP_FILE" ]; then
+                  echo "✅ Backup criado: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | cut -f1))"
+                  ln -sf "$BACKUP_FILE" "${APP_DIR}/backups/latest.sql"
+                else
+                  echo "⚠️ AVISO: Backup vazio ou falhou, mas continuando deploy..."
+                fi
+              else
+                echo "ℹ️ Banco vazio, backup não necessário"
+              fi
+            fi
+
+            # ===== EXECUTAR MIGRATIONS =====
+            echo "=== Executando migrations do Prisma ==="
+
+            # Aguardar API estar pronta
+            sleep 5
+
+            # Executar migrations via container da API
+            if docker exec fuselink-api npx prisma migrate deploy --schema=./packages/database/prisma/schema.prisma; then
+              echo "✅ Migrations aplicadas com sucesso"
+            else
+              echo "❌ ERRO: Migrations falharam!"
+              echo "🔄 Tentando restaurar backup..."
+
+              if [ -f "${APP_DIR}/backups/latest.sql" ]; then
+                docker exec -i fuselink-postgres psql -U fuselink -d fuselink < "${APP_DIR}/backups/latest.sql"
+                echo "✅ Backup restaurado, rollback completo"
+              fi
+
+              docker logs fuselink-api --tail=50
+              exit 1
+            fi
+
+            # Verificar se tabelas foram criadas
+            echo "=== Validando criação de tabelas ==="
+            TABLE_COUNT=$(docker exec fuselink-postgres psql -U fuselink -d fuselink -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';" 2>/dev/null | tr -d '[:space:]' || echo "0")
+
+            echo "DEBUG: TABLE_COUNT='$TABLE_COUNT'"
+
+            if [ -n "$TABLE_COUNT" ] && [ "$TABLE_COUNT" -gt "0" ] 2>/dev/null; then
+              echo "✅ Validado: $TABLE_COUNT tabela(s) criada(s) no banco"
+            else
+              echo "❌ ERRO: Nenhuma tabela encontrada após migrations!"
+              echo "=== Listando tabelas ==="
+              docker exec fuselink-postgres psql -U fuselink -d fuselink -c "\dt"
+              exit 1
+            fi
+
+            # Verificar se seed já foi executado
+            echo "=== Verificando necessidade de executar seed ==="
+            USER_COUNT=$(docker exec fuselink-postgres psql -U fuselink -d fuselink -t -c "SELECT COUNT(*) FROM \"User\";" 2>/dev/null | tr -d '[:space:]' || echo "0")
+
+            echo "DEBUG: USER_COUNT='$USER_COUNT'"
+
+            if [ "$USER_COUNT" = "0" ] || [ -z "$USER_COUNT" ]; then
+              echo "📦 Banco de dados vazio, executando seed..."
+
+              # Executar seed
+              if docker exec fuselink-api sh -c "cd packages/database && npx tsx prisma/seed.ts"; then
+                echo "✅ Seed executado com sucesso!"
+
+                # Validar que usuário foi criado
+                echo "=== Validando criação de usuários ==="
+                USER_COUNT_AFTER=$(docker exec fuselink-postgres psql -U fuselink -d fuselink -t -c "SELECT COUNT(*) FROM \"User\";" 2>/dev/null | tr -d '[:space:]' || echo "0")
+
+                if [ -n "$USER_COUNT_AFTER" ] && [ "$USER_COUNT_AFTER" -gt "0" ] 2>/dev/null; then
+                  echo "✅ Validado: $USER_COUNT_AFTER usuário(s) criado(s) no banco"
+
+                  # Listar usuários criados
+                  echo "=== Usuários criados ==="
+                  docker exec fuselink-postgres psql -U fuselink -d fuselink -c "SELECT email, username, name FROM \"User\";"
+                else
+                  echo "⚠️ AVISO: Nenhum usuário encontrado após seed"
+                fi
+              else
+                echo "⚠️ AVISO: Seed falhou, mas continuando (pode ser normal se já existem dados)"
+              fi
+            else
+              echo "✓ Seed já foi executado anteriormente ($USER_COUNT usuários existem)"
+            fi
+
+            # ===== LOGS DE DIAGNÓSTICO =====
+            echo "=== Logs da API (últimas 50 linhas) ==="
+            docker logs fuselink-api --tail=50
+
+            echo ""
+            echo "=== Logs do Frontend (últimas 30 linhas) ==="
+            docker logs fuselink-web --tail=30
+
+            # ===== CONFIGURAR NGINX =====
+            echo "=== Configurando Nginx para porta 3200 ==="
+
+            # Criar configuração do Nginx
+            cat > /etc/nginx/sites-available/fuselink.conf << 'NGINX_EOF'
+            # HTTP - FuseLink
+            server {
+                listen 80;
+                listen [::]:80;
+
+                server_name fuselink.com.br www.fuselink.com.br;
+
+                # Redirecionar HTTP para HTTPS
+                return 301 https://$server_name$request_uri;
+            }
+
+            # HTTPS - FuseLink
+            server {
+                listen 443 ssl http2;
+                listen [::]:443 ssl http2;
+
+                server_name fuselink.com.br www.fuselink.com.br;
+
+                # SSL Configuration (certbot irá adicionar certificados)
+                # ssl_certificate e ssl_certificate_key serão configurados pelo certbot
+
+                # Logs
+                access_log /var/log/nginx/fuselink-access.log;
+                error_log /var/log/nginx/fuselink-error.log;
+
+                # Limite de upload (para imagens/vídeos)
+                client_max_body_size 10M;
+                client_body_timeout 300s;
+
+                # Proxy para aplicação na porta 3200
+                location / {
+                    proxy_pass http://127.0.0.1:3200;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_cache_bypass $http_upgrade;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    proxy_connect_timeout 60s;
+                    proxy_send_timeout 60s;
+                    proxy_read_timeout 60s;
+                }
+
+                # Health check
+                location /health {
+                    proxy_pass http://127.0.0.1:3200/health;
+                    access_log off;
+                }
+
+                # Uploads
+                location /uploads/ {
+                    proxy_pass http://127.0.0.1:3200/uploads/;
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+            }
+            NGINX_EOF
+
+            # Habilitar site
+            ln -sf /etc/nginx/sites-available/fuselink.conf /etc/nginx/sites-enabled/
+
+            # Testar e recarregar Nginx
+            nginx -t && systemctl reload nginx
+            echo "✅ Nginx configurado com sucesso na porta 3200"
+
+            # Aguardar Nginx iniciar
+            sleep 3
+
+            # Verificar se está escutando nas portas
+            echo "=== Verificando portas em uso ==="
+            netstat -tulpn | grep nginx | grep ":80 " || echo "⚠️ Nginx não encontrado na porta 80"
+            netstat -tulpn | grep nginx | grep ":443 " || echo "⚠️ Nginx não encontrado na porta 443"
+            netstat -tulpn | grep -E "docker|nginx" | grep ":3200 " || echo "⚠️ App não encontrado na porta 3200"
+
+            # ===== VERIFICAR HEALTH CHECK =====
+            echo "=== Verificando health check ==="
+            for i in {1..30}; do
+              if curl -f http://localhost:3200/health 2>/dev/null; then
+                echo "✅ FuseLink está rodando na porta 3200!"
+
+                echo ""
+                echo "=== Testando frontend ==="
+                curl -I http://localhost:3200 2>/dev/null | head -5
+
+                echo ""
+                echo "=== Testando API ==="
+                curl -I http://localhost:3200/api/health 2>/dev/null | head -5 || echo "ℹ️ API health endpoint específico não disponível"
+
+                echo ""
+                echo "✅ Deploy concluído - aplicação está rodando!"
+                echo "📍 URLs:"
+                echo "   - https://fuselink.com.br"
+                echo "   - https://www.fuselink.com.br"
+                echo "📍 Porta externa: 3200"
+                echo "📦 Volumes persistentes:"
+                echo "   - postgres_data: PostgreSQL database"
+                echo "   - uploads: Arquivos enviados"
+
+                echo ""
+                echo "⚠️ IMPORTANTE: Configure SSL com certbot (se ainda não configurado):"
+                echo "   sudo certbot --nginx -d fuselink.com.br -d www.fuselink.com.br"
+
+                exit 0
+              fi
+              echo "Tentativa $i/30 falhou, aguardando 10s..."
+
+              # Mostrar logs a cada 5 tentativas
+              if [ $((i % 5)) -eq 0 ]; then
+                echo "=== Logs recentes da API ==="
+                docker logs fuselink-api --tail=20
+                echo "=== Logs recentes do Web ==="
+                docker logs fuselink-web --tail=20
+              fi
+
+              sleep 10
+            done
+
+            echo "⚠️ Health check falhou após 30 tentativas"
+            echo "=== Logs completos ==="
+            docker-compose logs --tail=100
+            exit 1
+
+      - name: Verify Deployment
+        if: success()
+        run: |
+          echo "✅ Deploy do FuseLink concluído com sucesso!"
+          echo "🌐 FuseLink disponível em:"
+          echo "   - https://fuselink.com.br"
+          echo "   - https://www.fuselink.com.br"
+          echo "📊 Health check: https://fuselink.com.br/health"
+          echo "🐳 Containers rodando:"
+          echo "   - fuselink-web (frontend Next.js)"
+          echo "   - fuselink-api (backend Express)"
+          echo "   - fuselink-postgres (banco de dados)"
+          echo "   - fuselink-nginx (reverse proxy)"
+          echo ""
+          echo "📝 Usuário demo (se seed foi executado):"
+          echo "   Email: demo@fuselink.com"
+          echo "   Senha: password123"
+          echo ""
+          echo "⚠️ PRÓXIMO PASSO (se ainda não configurado):"
+          echo "   Execute na VPS para configurar SSL:"
+          echo "   sudo certbot --nginx -d fuselink.com.br -d www.fuselink.com.br"

@@ -1,0 +1,78 @@
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import morgan from 'morgan'
+import compression from 'compression'
+import cookieParser from 'cookie-parser'
+import dotenv from 'dotenv'
+import path from 'path'
+
+// Load environment variables
+dotenv.config()
+
+// Import routes
+import authRoutes from './routes/auth.routes'
+import userRoutes from './routes/user.routes'
+import linkRoutes from './routes/link.routes'
+import socialLinkRoutes from './routes/social-link.routes'
+import analyticsRoutes from './routes/analytics.routes'
+import uploadRoutes from './routes/upload.routes'
+import subscriberRoutes from './routes/subscriber.routes'
+import collectionRoutes from './routes/collection.routes'
+
+// Import middleware
+import { errorHandler } from './middleware/error.middleware'
+import { rateLimiter } from './middleware/rate-limit.middleware'
+
+const app = express()
+const PORT = process.env.PORT || 3001
+
+// Middleware
+app.use(helmet())
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+}))
+app.use(compression())
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+app.use(cookieParser())
+app.use(morgan('combined'))
+
+// Apply rate limiting
+app.use(rateLimiter)
+
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
+
+// API Routes
+app.use('/auth', authRoutes)
+app.use('/users', userRoutes)
+app.use('/links', linkRoutes)
+app.use('/social-links', socialLinkRoutes)
+app.use('/analytics', analyticsRoutes)
+app.use('/upload', uploadRoutes)
+app.use('/subscribers', subscriberRoutes)
+app.use('/collections', collectionRoutes)
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' })
+})
+
+// Error handler
+app.use(errorHandler)
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 FuseLink API running on port ${PORT}`)
+  console.log(`📝 Environment: ${process.env.NODE_ENV}`)
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`)
+})
+
+export default app

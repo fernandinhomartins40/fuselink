@@ -1,0 +1,216 @@
+// Prisma Schema for FuseLink
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  username      String   @unique
+  name          String?
+  bio           String?
+  profileImage  String?
+  profileVideo  String?
+
+  // Appearance Settings
+  theme         String?  @default("default")
+  backgroundColor String? @default("#ffffff")
+  backgroundType String? @default("color") // color, gradient, image, video
+  backgroundValue String?
+  buttonStyle   String?  @default("rounded") // rounded, square, pill
+  buttonColor   String?  @default("#000000")
+  buttonTextColor String? @default("#ffffff")
+  buttonShadow  Boolean  @default(true)
+  fontFamily    String?  @default("Inter")
+  fontSize      String?  @default("medium")
+  removeBranding Boolean @default(false)
+
+  // Settings
+  isPublic      Boolean  @default(true)
+  customDomain  String?
+  metaTitle     String?
+  metaDescription String?
+  googleAnalyticsId String?
+  facebookPixel String?
+  favicon       String?
+  customLogo    String?
+
+  // Subscription
+  plan          String   @default("free") // free, starter, pro, premium
+  planExpiresAt DateTime?
+
+  // Relations
+  links         Link[]
+  socialLinks   SocialLink[]
+  pageViews     PageView[]
+  emailSubscribers EmailSubscriber[]
+  collections   Collection[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([username])
+  @@index([email])
+}
+
+model Link {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  url         String
+  description String?
+
+  // Appearance
+  icon        String?
+  thumbnail   String?
+  customIcon  String? // Upload custom icon
+
+  // Features
+  isActive    Boolean  @default(true)
+  isPriority  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  embedType   String?  // youtube, vimeo, tiktok
+  embedUrl    String?
+
+  // Scheduling
+  scheduleStart DateTime?
+  scheduleEnd   DateTime?
+
+  // Position
+  order       Int      @default(0)
+
+  // Collection
+  collectionId String?
+  collection  Collection? @relation(fields: [collectionId], references: [id])
+
+  // UTM Parameters
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+
+  clicks      LinkClick[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([order])
+}
+
+model Collection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String
+  layout    String   @default("grid") // grid, carousel, list
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  links     Link[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  platform  String   // instagram, twitter, youtube, tiktok, linkedin, github, etc
+  url       String
+  icon      String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model PageView {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Analytics data
+  referrer      String?
+  country       String?
+  city          String?
+  region        String?
+  device        String?  // mobile, desktop, tablet
+  browser       String?
+  os            String?
+  ipAddress     String?
+  userAgent     String?
+
+  // Session tracking
+  sessionId     String?
+  isUnique      Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([sessionId])
+}
+
+model LinkClick {
+  id        String   @id @default(cuid())
+  linkId    String
+  link      Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  // Analytics data
+  referrer  String?
+  country   String?
+  city      String?
+  region    String?
+  device    String?
+  browser   String?
+  os        String?
+  ipAddress String?
+  userAgent String?
+
+  // Session tracking
+  sessionId String?
+  isUnique  Boolean  @default(false)
+
+  // Timing
+  timeToClick Int?    // Milliseconds from page view to click
+
+  createdAt DateTime @default(now())
+
+  @@index([linkId])
+  @@index([createdAt])
+}
+
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  email     String
+  phone     String?
+  source    String? // Which link/form collected this
+  tags      String[] @default([])
+
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([email])
+}
