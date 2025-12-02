@@ -15,7 +15,6 @@ async function main() {
     create: {
       email: 'demo@fuselink.com',
       password: hashedPassword,
-      username: 'demo',
       name: 'Demo User',
       bio: 'Welcome to my FuseLink! Check out all my links below 👇',
       profileImage: '/uploads/demo-avatar.jpg',
@@ -31,7 +30,7 @@ async function main() {
     },
   })
 
-  console.log('✅ User created:', user.username)
+  console.log('✅ User created:', user.email)
 
   // Create demo links
   const links = [
