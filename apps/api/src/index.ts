@@ -27,6 +27,9 @@ import { rateLimiter } from './middleware/rate-limit.middleware'
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// Trust proxy - necessário para funcionar atrás do Nginx
+app.set('trust proxy', 1)
+
 // Middleware
 app.use(helmet())
 app.use(cors({
