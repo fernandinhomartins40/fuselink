@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { authAPI } from '@/lib/api'
 import { toast } from 'sonner'
-import { Link as LinkIcon, Loader2 } from 'lucide-react'
+import { Link as LinkIcon, Loader2, Check, X } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -17,15 +17,47 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     name: '',
   })
 
+  // Password strength validation
+  const passwordValidation = useMemo(() => {
+    const password = formData.password
+    return {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      passwordsMatch: formData.password === formData.confirmPassword && formData.confirmPassword !== '',
+    }
+  }, [formData.password, formData.confirmPassword])
+
+  const isPasswordStrong = useMemo(() => {
+    return passwordValidation.minLength &&
+           passwordValidation.hasUppercase &&
+           passwordValidation.hasSpecialChar
+  }, [passwordValidation])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate password strength
+    if (!isPasswordStrong) {
+      toast.error('A senha não atende aos requisitos de segurança')
+      return
+    }
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('As senhas não coincidem')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await authAPI.register(formData)
+      const { confirmPassword, ...registerData } = formData
+      const response = await authAPI.register(registerData)
 
       if (response.data.success) {
         localStorage.setItem('token', response.data.data.token)
@@ -96,12 +128,75 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Deve ter no mínimo 6 caracteres
-                </p>
+                {formData.password && (
+                  <div className="space-y-2 mt-2">
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordValidation.minLength ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <X className="h-3 w-3 text-red-500" />
+                      )}
+                      <span className={passwordValidation.minLength ? 'text-green-600' : 'text-muted-foreground'}>
+                        Mínimo 8 caracteres
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordValidation.hasUppercase ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <X className="h-3 w-3 text-red-500" />
+                      )}
+                      <span className={passwordValidation.hasUppercase ? 'text-green-600' : 'text-muted-foreground'}>
+                        Uma letra maiúscula
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {passwordValidation.hasSpecialChar ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <X className="h-3 w-3 text-red-500" />
+                      )}
+                      <span className={passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-muted-foreground'}>
+                        Um caractere especial (!@#$%^&*...)
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  autoComplete="new-password"
+                  required
+                />
+                {formData.confirmPassword && (
+                  <div className="flex items-center gap-2 text-xs mt-1">
+                    {passwordValidation.passwordsMatch ? (
+                      <>
+                        <Check className="h-3 w-3 text-green-500" />
+                        <span className="text-green-600">As senhas coincidem</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-3 w-3 text-red-500" />
+                        <span className="text-red-500">As senhas não coincidem</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading || !isPasswordStrong || !passwordValidation.passwordsMatch}
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -7,7 +7,10 @@
       "Bash(ssh root@fuselink.com.br \"cat /etc/nginx/sites-enabled/advocaciapitanga.conf\")",
       "Bash(ssh:*)",
       "Bash(docker-compose build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix: Remover campo username e simplificar cadastro\n\n- Remove campo username do modelo User no Prisma\n- Atualiza validações para requerer apenas nome, email e senha\n- Simplifica formulário de registro no frontend\n- Atualiza controladores e rotas da API\n- Atualiza interfaces TypeScript\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Implementar validação de senha forte e confirmação\n\n- Aumenta requisito mínimo de senha para 8 caracteres\n- Adiciona validação de letra maiúscula obrigatória\n- Adiciona validação de caractere especial obrigatório\n- Implementa campo de confirmação de senha\n- Adiciona feedback visual em tempo real da força da senha\n- Mostra indicadores visuais (check/x) para cada requisito\n- Desabilita botão de submit até senha atender requisitos\n- Valida correspondência de senhas antes do envio\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
