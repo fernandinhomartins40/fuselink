@@ -11,7 +11,6 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
       select: {
         id: true,
         email: true,
-        username: true,
         name: true,
         bio: true,
         profileImage: true,
@@ -65,7 +64,6 @@ export const updateMe = async (req: AuthRequest, res: Response, next: NextFuncti
       select: {
         id: true,
         email: true,
-        username: true,
         name: true,
         bio: true,
         profileImage: true,
@@ -126,19 +124,18 @@ export const updateAppearance = async (
   }
 }
 
-export const getUserByUsername = async (
+export const getUserById = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { username } = req.params
+    const { userId } = req.params
 
     const user = await prisma.user.findUnique({
-      where: { username },
+      where: { id: userId },
       select: {
         id: true,
-        username: true,
         name: true,
         bio: true,
         profileImage: true,

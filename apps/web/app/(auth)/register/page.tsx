@@ -16,7 +16,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    username: '',
     password: '',
     name: '',
   })
@@ -69,24 +68,8 @@ export default function RegisterPage() {
                   placeholder="João Silva"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="username">Nome de Usuário</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="joaosilva"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value.toLowerCase() })
-                  }
                   required
                 />
-                <p className="text-xs text-muted-foreground">
-                  Seu FuseLink será: fuselink.com/{formData.username || 'nomedeusuario'}
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -94,7 +77,7 @@ export default function RegisterPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="seu@email.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   autoComplete="email"

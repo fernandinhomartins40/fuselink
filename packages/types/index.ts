@@ -2,8 +2,7 @@
 export interface User {
   id: string
   email: string
-  username: string
-  name?: string
+  name: string
   bio?: string
   profileImage?: string
   profileVideo?: string
@@ -34,8 +33,7 @@ export interface User {
 
 export interface UserPublic {
   id: string
-  username: string
-  name?: string
+  name: string
   bio?: string
   profileImage?: string
   profileVideo?: string
@@ -212,8 +210,7 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string
   password: string
-  username: string
-  name?: string
+  name: string
 }
 
 // API Response Types

@@ -1,12 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)",
-      "Bash(git remote add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(ssh root@fuselink.com.br \"systemctl status docker && docker ps -a\")",
+      "Bash(ssh root@fuselink.com.br \"systemctl status nginx && nginx -t\")",
+      "Bash(ssh root@fuselink.com.br \"ls -la /etc/nginx/sites-enabled/ && cat /etc/nginx/sites-enabled/fuselink.conf\")",
+      "Bash(ssh root@fuselink.com.br \"cat /etc/nginx/sites-enabled/advocaciapitanga.conf\")",
+      "Bash(ssh:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

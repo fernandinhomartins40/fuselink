@@ -10,17 +10,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const data = registerSchema.parse(req.body)
 
     // Check if user already exists
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email: data.email }, { username: data.username }],
-      },
+    const existingUser = await prisma.user.findUnique({
+      where: { email: data.email },
     })
 
     if (existingUser) {
-      if (existingUser.email === data.email) {
-        throw new AppError(400, 'E-mail já cadastrado')
-      }
-      throw new AppError(400, 'Nome de usuário já está em uso')
+      throw new AppError(400, 'E-mail já cadastrado')
     }
 
     // Hash password
@@ -31,13 +26,11 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       data: {
         email: data.email,
         password: hashedPassword,
-        username: data.username,
         name: data.name,
       },
       select: {
         id: true,
         email: true,
-        username: true,
         name: true,
         bio: true,
         profileImage: true,
