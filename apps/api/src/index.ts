@@ -54,14 +54,14 @@ app.get('/health', (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // API Routes
-app.use('/auth', authRoutes)
-app.use('/users', userRoutes)
-app.use('/links', linkRoutes)
-app.use('/social-links', socialLinkRoutes)
-app.use('/analytics', analyticsRoutes)
-app.use('/upload', uploadRoutes)
-app.use('/subscribers', subscriberRoutes)
-app.use('/collections', collectionRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/links', linkRoutes)
+app.use('/api/social-links', socialLinkRoutes)
+app.use('/api/analytics', analyticsRoutes)
+app.use('/api/upload', uploadRoutes)
+app.use('/api/subscribers', subscriberRoutes)
+app.use('/api/collections', collectionRoutes)
 
 // 404 handler
 app.use((req, res) => {
