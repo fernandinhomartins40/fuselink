@@ -3,12 +3,16 @@ set -e
 
 echo "🚀 Iniciando FuseLink API..."
 
-# Aguardar o PostgreSQL estar pronto usando npx prisma
+# Aguardar o PostgreSQL estar pronto
 echo "⏳ Aguardando PostgreSQL..."
 MAX_RETRIES=30
 RETRY_COUNT=0
 
-until npx prisma db execute --schema=./packages/database/prisma/schema.prisma --stdin <<< "SELECT 1;" 2>/dev/null || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+  if echo "SELECT 1;" | npx prisma db execute --schema=./packages/database/prisma/schema.prisma --stdin 2>/dev/null; then
+    echo "✅ PostgreSQL está pronto!"
+    break
+  fi
   RETRY_COUNT=$((RETRY_COUNT + 1))
   echo "PostgreSQL não está pronto - tentativa $RETRY_COUNT/$MAX_RETRIES..."
   sleep 2
@@ -18,8 +22,6 @@ if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
   echo "❌ ERRO: PostgreSQL não está respondendo após $MAX_RETRIES tentativas!"
   exit 1
 fi
-
-echo "✅ PostgreSQL está pronto!"
 
 # Executar migrations do Prisma
 echo "🔄 Executando migrations do Prisma..."
