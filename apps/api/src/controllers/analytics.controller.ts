@@ -14,14 +14,14 @@ import {
 
 export const trackPageView = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { username } = req.body
+    const { email } = req.body
 
-    if (!username) {
-      throw new AppError(400, 'Nome de usuário é necessário')
+    if (!email) {
+      throw new AppError(400, 'Email é necessário')
     }
 
     const user = await prisma.user.findUnique({
-      where: { username },
+      where: { email },
       select: { id: true },
     })
 
