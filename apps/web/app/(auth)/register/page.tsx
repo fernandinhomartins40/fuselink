@@ -38,6 +38,23 @@ export default function RegisterPage() {
            passwordValidation.hasSpecialChar
   }, [passwordValidation])
 
+  // Calculate password strength score (0-3)
+  const passwordStrength = useMemo(() => {
+    let score = 0
+    if (passwordValidation.minLength) score++
+    if (passwordValidation.hasUppercase) score++
+    if (passwordValidation.hasSpecialChar) score++
+    return score
+  }, [passwordValidation])
+
+  // Get strength label and color
+  const getStrengthInfo = (strength: number) => {
+    if (strength === 0) return { label: 'Muito fraca', color: 'bg-red-500', width: '0%' }
+    if (strength === 1) return { label: 'Fraca', color: 'bg-red-500', width: '33%' }
+    if (strength === 2) return { label: 'Média', color: 'bg-yellow-500', width: '66%' }
+    return { label: 'Forte', color: 'bg-green-500', width: '100%' }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -129,36 +146,59 @@ export default function RegisterPage() {
                   required
                 />
                 {formData.password && (
-                  <div className="space-y-2 mt-2">
-                    <div className="flex items-center gap-2 text-xs">
-                      {passwordValidation.minLength ? (
-                        <Check className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <X className="h-3 w-3 text-red-500" />
-                      )}
-                      <span className={passwordValidation.minLength ? 'text-green-600' : 'text-muted-foreground'}>
-                        Mínimo 8 caracteres
-                      </span>
+                  <div className="space-y-3 mt-2">
+                    {/* Password strength bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground">Força da senha:</span>
+                        <span className={`font-medium ${
+                          passwordStrength === 3 ? 'text-green-600' :
+                          passwordStrength === 2 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {getStrengthInfo(passwordStrength).label}
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${getStrengthInfo(passwordStrength).color}`}
+                          style={{ width: getStrengthInfo(passwordStrength).width }}
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      {passwordValidation.hasUppercase ? (
-                        <Check className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <X className="h-3 w-3 text-red-500" />
-                      )}
-                      <span className={passwordValidation.hasUppercase ? 'text-green-600' : 'text-muted-foreground'}>
-                        Uma letra maiúscula
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      {passwordValidation.hasSpecialChar ? (
-                        <Check className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <X className="h-3 w-3 text-red-500" />
-                      )}
-                      <span className={passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-muted-foreground'}>
-                        Um caractere especial (!@#$%^&*...)
-                      </span>
+
+                    {/* Password requirements checklist */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        {passwordValidation.minLength ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
+                        <span className={passwordValidation.minLength ? 'text-green-600' : 'text-muted-foreground'}>
+                          Mínimo 8 caracteres
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {passwordValidation.hasUppercase ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
+                        <span className={passwordValidation.hasUppercase ? 'text-green-600' : 'text-muted-foreground'}>
+                          Uma letra maiúscula
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {passwordValidation.hasSpecialChar ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
+                        <span className={passwordValidation.hasSpecialChar ? 'text-green-600' : 'text-muted-foreground'}>
+                          Um caractere especial (!@#$%^&*...)
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
