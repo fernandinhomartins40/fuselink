@@ -18,9 +18,9 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     if (existingUser) {
       if (existingUser.email === data.email) {
-        throw new AppError(400, 'Email already registered')
+        throw new AppError(400, 'E-mail já cadastrado')
       }
-      throw new AppError(400, 'Username already taken')
+      throw new AppError(400, 'Nome de usuário já está em uso')
     }
 
     // Hash password
@@ -75,14 +75,14 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     })
 
     if (!user) {
-      throw new AppError(401, 'Invalid credentials')
+      throw new AppError(401, 'Credenciais inválidas')
     }
 
     // Verify password
     const isValidPassword = await comparePassword(data.password, user.password)
 
     if (!isValidPassword) {
-      throw new AppError(401, 'Invalid credentials')
+      throw new AppError(401, 'Credenciais inválidas')
     }
 
     // Generate tokens
@@ -110,7 +110,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
     const { refreshToken: token } = req.body
 
     if (!token) {
-      throw new AppError(400, 'Refresh token required')
+      throw new AppError(400, 'Token de atualização necessário')
     }
 
     // Verify refresh token
@@ -128,7 +128,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
       },
     })
   } catch (error) {
-    next(new AppError(401, 'Invalid refresh token'))
+    next(new AppError(401, 'Token de atualização inválido'))
   }
 }
 
@@ -145,7 +145,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       // Don't reveal if user exists
       return res.status(200).json({
         success: true,
-        message: 'If the email exists, a password reset link has been sent',
+        message: 'Se o e-mail existir, um link de redefinição de senha foi enviado',
       })
     }
 
@@ -155,7 +155,7 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
 
     res.status(200).json({
       success: true,
-      message: 'Password reset link sent',
+      message: 'Link de redefinição de senha enviado',
       // In development only:
       ...(process.env.NODE_ENV === 'development' && { resetToken }),
     })
@@ -169,7 +169,7 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
     const { token, password } = req.body
 
     if (!token || !password) {
-      throw new AppError(400, 'Token and password required')
+      throw new AppError(400, 'Token e senha são necessários')
     }
 
     // Verify token
@@ -186,9 +186,9 @@ export const resetPassword = async (req: Request, res: Response, next: NextFunct
 
     res.status(200).json({
       success: true,
-      message: 'Password reset successful',
+      message: 'Senha redefinida com sucesso',
     })
   } catch (error) {
-    next(new AppError(401, 'Invalid or expired token'))
+    next(new AppError(401, 'Token inválido ou expirado'))
   }
 }

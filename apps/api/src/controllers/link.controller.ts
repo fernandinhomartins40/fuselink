@@ -76,11 +76,11 @@ export const updateLink = async (req: AuthRequest, res: Response, next: NextFunc
     })
 
     if (!existingLink) {
-      throw new AppError(404, 'Link not found')
+      throw new AppError(404, 'Link não encontrado')
     }
 
     if (existingLink.userId !== req.userId) {
-      throw new AppError(403, 'Unauthorized')
+      throw new AppError(403, 'Não autorizado')
     }
 
     const link = await prisma.link.update({
@@ -111,11 +111,11 @@ export const deleteLink = async (req: AuthRequest, res: Response, next: NextFunc
     })
 
     if (!existingLink) {
-      throw new AppError(404, 'Link not found')
+      throw new AppError(404, 'Link não encontrado')
     }
 
     if (existingLink.userId !== req.userId) {
-      throw new AppError(403, 'Unauthorized')
+      throw new AppError(403, 'Não autorizado')
     }
 
     await prisma.link.delete({
@@ -124,7 +124,7 @@ export const deleteLink = async (req: AuthRequest, res: Response, next: NextFunc
 
     res.status(200).json({
       success: true,
-      message: 'Link deleted successfully',
+      message: 'Link excluído com sucesso',
     })
   } catch (error) {
     next(error)
@@ -147,7 +147,7 @@ export const reorderLinks = async (req: AuthRequest, res: Response, next: NextFu
 
     res.status(200).json({
       success: true,
-      message: 'Links reordered successfully',
+      message: 'Links reordenados com sucesso',
     })
   } catch (error) {
     next(error)
@@ -169,11 +169,11 @@ export const getLinkAnalytics = async (
     })
 
     if (!link) {
-      throw new AppError(404, 'Link not found')
+      throw new AppError(404, 'Link não encontrado')
     }
 
     if (link.userId !== req.userId) {
-      throw new AppError(403, 'Unauthorized')
+      throw new AppError(403, 'Não autorizado')
     }
 
     const startDate = startOfDay(subDays(new Date(), parseInt(days as string)))

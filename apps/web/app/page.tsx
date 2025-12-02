@@ -18,16 +18,16 @@ export default function HomePage() {
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">
-              Features
+              Recursos
             </Link>
             <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
-              Pricing
+              Preços
             </Link>
             <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">
-              Login
+              Entrar
             </Link>
             <Link href="/register">
-              <Button>Get Started</Button>
+              <Button>Começar</Button>
             </Link>
           </nav>
         </div>
@@ -37,26 +37,26 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-20 md:py-32">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-            The Only Link You Need
+            O Único Link Que Você Precisa
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-            Share all your content, products, and social links in one beautiful page.
-            Perfect for creators, influencers, and businesses.
+            Compartilhe todo seu conteúdo, produtos e redes sociais em uma página linda.
+            Perfeito para criadores, influenciadores e empresas.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/register">
               <Button size="lg" className="text-lg px-8">
-                Start For Free <ArrowRight className="ml-2 w-5 h-5" />
+                Começar Grátis <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link href="#demo">
               <Button size="lg" variant="outline" className="text-lg px-8">
-                View Demo
+                Ver Demo
               </Button>
             </Link>
           </div>
           <p className="text-sm text-muted-foreground mt-4">
-            No credit card required • Setup in 5 minutes
+            Sem cartão de crédito • Configure em 5 minutos
           </p>
         </div>
       </section>
@@ -65,33 +65,33 @@ export default function HomePage() {
       <section id="features" className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Everything You Need
+            Tudo Que Você Precisa
           </h2>
           <p className="text-xl text-muted-foreground">
-            Powerful features to showcase your content
+            Recursos poderosos para destacar seu conteúdo
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <FeatureCard
             icon={<LinkIcon className="w-8 h-8" />}
-            title="Unlimited Links"
-            description="Add as many links as you want. Organize them with collections and schedules."
+            title="Links Ilimitados"
+            description="Adicione quantos links quiser. Organize-os com coleções e agendamentos."
           />
           <FeatureCard
             icon={<Palette className="w-8 h-8" />}
-            title="Full Customization"
-            description="Choose from beautiful themes or create your own with custom colors, fonts, and backgrounds."
+            title="Personalização Total"
+            description="Escolha entre temas lindos ou crie o seu próprio com cores, fontes e fundos personalizados."
           />
           <FeatureCard
             icon={<BarChart3 className="w-8 h-8" />}
-            title="Advanced Analytics"
-            description="Track views, clicks, and understand your audience with detailed insights."
+            title="Análises Avançadas"
+            description="Acompanhe visualizações, cliques e entenda sua audiência com insights detalhados."
           />
           <FeatureCard
             icon={<Zap className="w-8 h-8" />}
-            title="Lightning Fast"
-            description="Optimized for speed and performance. Your page loads instantly."
+            title="Ultrarrápido"
+            description="Otimizado para velocidade e desempenho. Sua página carrega instantaneamente."
           />
         </div>
       </section>
@@ -100,14 +100,14 @@ export default function HomePage() {
       <section className="container mx-auto px-4 py-20">
         <div className="bg-gradient-to-r from-primary to-secondary rounded-3xl p-12 text-center text-white">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ready to Get Started?
+            Pronto Para Começar?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of creators using FuseLink
+            Junte-se a milhares de criadores usando FuseLink
           </p>
           <Link href="/register">
             <Button size="lg" variant="secondary" className="text-lg px-8">
-              Create Your FuseLink <ArrowRight className="ml-2 w-5 h-5" />
+              Crie Seu FuseLink <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
         </div>
@@ -122,7 +122,7 @@ export default function HomePage() {
               <span className="font-bold">FuseLink</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2024 FuseLink. All rights reserved.
+              © 2024 FuseLink. Todos os direitos reservados.
             </p>
           </div>
         </div>

@@ -23,11 +23,11 @@ export default function ForgotPasswordPage() {
       const response = await authAPI.forgotPassword({ email })
 
       if (response.data.success) {
-        toast.success('Password reset instructions sent to your email')
+        toast.success('Instruções de redefinição de senha enviadas para seu e-mail')
         setSent(true)
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Something went wrong')
+      toast.error(error.response?.data?.message || 'Algo deu errado')
     } finally {
       setLoading(false)
     }
@@ -47,11 +47,11 @@ export default function ForgotPasswordPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Forgot Password?</CardTitle>
+            <CardTitle>Esqueceu a Senha?</CardTitle>
             <CardDescription>
               {sent
-                ? 'Check your email for reset instructions'
-                : 'Enter your email to receive reset instructions'}
+                ? 'Verifique seu e-mail para instruções de redefinição'
+                : 'Digite seu e-mail para receber instruções de redefinição'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -59,13 +59,13 @@ export default function ForgotPasswordPage() {
               <div className="space-y-4">
                 <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
                   <p className="text-sm text-center">
-                    We've sent password reset instructions to <strong>{email}</strong>
+                    Enviamos instruções de redefinição de senha para <strong>{email}</strong>
                   </p>
                 </div>
                 <Link href="/login">
                   <Button variant="outline" className="w-full">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Login
+                    Voltar para Login
                   </Button>
                 </Link>
               </div>
@@ -87,17 +87,17 @@ export default function ForgotPasswordPage() {
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sending...
+                      Enviando...
                     </>
                   ) : (
-                    'Send Reset Link'
+                    'Enviar Link de Redefinição'
                   )}
                 </Button>
 
                 <Link href="/login">
                   <Button variant="ghost" className="w-full">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Login
+                    Voltar para Login
                   </Button>
                 </Link>
               </form>

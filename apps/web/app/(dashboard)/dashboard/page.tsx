@@ -45,9 +45,9 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-2">Painel</h1>
         <p className="text-muted-foreground">
-          Welcome back, {user?.name}! Here's your overview.
+          Bem-vindo de volta, {user?.name}! Aqui está sua visão geral.
         </p>
       </div>
 
@@ -56,48 +56,48 @@ export default function DashboardPage() {
         <Link href="/dashboard/links">
           <Button>
             <LinkIcon className="mr-2 h-4 w-4" />
-            Add New Link
+            Adicionar Novo Link
           </Button>
         </Link>
         <Link href={`/${user?.username}`} target="_blank">
-          <Button variant="outline">View Public Page</Button>
+          <Button variant="outline">Ver Página Pública</Button>
         </Link>
       </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Views"
+          title="Total de Visualizações"
           value={formatNumber(analytics?.totalViews || 0)}
           icon={Eye}
-          description="Last 7 days"
+          description="Últimos 7 dias"
           trend="+12%"
         />
         <StatCard
-          title="Total Clicks"
+          title="Total de Cliques"
           value={formatNumber(analytics?.totalClicks || 0)}
           icon={MousePointerClick}
-          description="Last 7 days"
+          description="Últimos 7 dias"
           trend="+8%"
         />
         <StatCard
-          title="Click Rate"
+          title="Taxa de Cliques"
           value={`${analytics?.ctr || 0}%`}
           icon={TrendingUp}
-          description="Avg. CTR"
+          description="CTR Médio"
         />
         <StatCard
-          title="Unique Visitors"
+          title="Visitantes Únicos"
           value={formatNumber(analytics?.uniqueViews || 0)}
           icon={Eye}
-          description="Last 7 days"
+          description="Últimos 7 dias"
         />
       </div>
 
       {/* Profile Link */}
       <Card>
         <CardHeader>
-          <CardTitle>Your FuseLink</CardTitle>
+          <CardTitle>Seu FuseLink</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
@@ -113,7 +113,7 @@ export default function DashboardPage() {
                 )
               }}
             >
-              Copy Link
+              Copiar Link
             </Button>
           </div>
         </CardContent>
@@ -122,21 +122,21 @@ export default function DashboardPage() {
       {/* Recent Activity */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Tips</CardTitle>
+          <CardTitle>Dicas Rápidas</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="space-y-2">
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>
-              <span>Add more links to showcase all your content</span>
+              <span>Adicione mais links para mostrar todo seu conteúdo</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>
-              <span>Customize your page appearance to match your brand</span>
+              <span>Personalize a aparência da sua página para combinar com sua marca</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>
-              <span>Check analytics to understand your audience better</span>
+              <span>Verifique as análises para entender melhor sua audiência</span>
             </li>
           </ul>
         </CardContent>

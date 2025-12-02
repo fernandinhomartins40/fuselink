@@ -32,11 +32,11 @@ export default function RegisterPage() {
         localStorage.setItem('token', response.data.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.data.user))
 
-        toast.success('Account created successfully!')
+        toast.success('Conta criada com sucesso!')
         router.push('/dashboard')
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Registration failed')
+      toast.error(error.response?.data?.message || 'Falha no cadastro')
     } finally {
       setLoading(false)
     }
@@ -56,28 +56,28 @@ export default function RegisterPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Create Account</CardTitle>
-            <CardDescription>Get started with FuseLink for free</CardDescription>
+            <CardTitle>Criar Conta</CardTitle>
+            <CardDescription>Comece com FuseLink gratuitamente</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Nome Completo</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="João Silva"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Nome de Usuário</Label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="johndoe"
+                  placeholder="joaosilva"
                   value={formData.username}
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value.toLowerCase() })
@@ -85,7 +85,7 @@ export default function RegisterPage() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Your FuseLink will be: fuselink.com/{formData.username || 'username'}
+                  Seu FuseLink será: fuselink.com/{formData.username || 'nomedeusuario'}
                 </p>
               </div>
 
@@ -102,7 +102,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Senha</Label>
                 <Input
                   id="password"
                   type="password"
@@ -112,7 +112,7 @@ export default function RegisterPage() {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Must be at least 6 characters
+                  Deve ter no mínimo 6 caracteres
                 </p>
               </div>
 
@@ -120,18 +120,18 @@ export default function RegisterPage() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    Criando conta...
                   </>
                 ) : (
-                  'Create Account'
+                  'Criar Conta'
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Already have an account? </span>
+              <span className="text-muted-foreground">Já tem uma conta? </span>
               <Link href="/login" className="text-primary hover:underline font-medium">
-                Sign in
+                Entrar
               </Link>
             </div>
           </CardContent>

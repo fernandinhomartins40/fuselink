@@ -26,7 +26,7 @@ export const createSubscriber = async (req: Request, res: Response, next: NextFu
     const { userId } = req.body
 
     if (!userId) {
-      throw new AppError(400, 'User ID is required')
+      throw new AppError(400, 'ID do usuário é necessário')
     }
 
     const subscriber = await prisma.emailSubscriber.create({
@@ -52,14 +52,14 @@ export const deleteSubscriber = async (req: AuthRequest, res: Response, next: Ne
     const existing = await prisma.emailSubscriber.findUnique({ where: { id } })
 
     if (!existing || existing.userId !== req.userId) {
-      throw new AppError(404, 'Subscriber not found')
+      throw new AppError(404, 'Inscrito não encontrado')
     }
 
     await prisma.emailSubscriber.delete({ where: { id } })
 
     res.status(200).json({
       success: true,
-      message: 'Subscriber deleted successfully',
+      message: 'Inscrito excluído com sucesso',
     })
   } catch (error) {
     next(error)

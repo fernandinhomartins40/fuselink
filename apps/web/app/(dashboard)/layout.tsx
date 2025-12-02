@@ -36,12 +36,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/dashboard', label: 'Painel', icon: LayoutDashboard },
     { href: '/dashboard/links', label: 'Links', icon: LinkIcon },
-    { href: '/dashboard/appearance', label: 'Appearance', icon: Palette },
-    { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/dashboard/subscribers', label: 'Subscribers', icon: Mail },
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard/appearance', label: 'Aparência', icon: Palette },
+    { href: '/dashboard/analytics', label: 'Análises', icon: BarChart3 },
+    { href: '/dashboard/subscribers', label: 'Inscritos', icon: Mail },
+    { href: '/dashboard/settings', label: 'Configurações', icon: Settings },
   ]
 
   return (
@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
+              <p className="text-sm font-medium truncate">{user?.name || 'Usuário'}</p>
               <p className="text-xs text-muted-foreground truncate">@{user?.username}</p>
             </div>
           </div>
@@ -114,7 +114,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            Sair
           </Button>
         </div>
       </aside>

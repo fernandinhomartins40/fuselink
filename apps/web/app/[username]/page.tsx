@@ -64,7 +64,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4">404</h1>
-          <p className="text-muted-foreground">User not found</p>
+          <p className="text-muted-foreground">Usuário não encontrado</p>
         </div>
       </div>
     )
@@ -201,7 +201,7 @@ export default function PublicProfilePage() {
               className="text-sm hover:opacity-100 transition-opacity"
               style={{ color: data.buttonColor || '#000' }}
             >
-              Create your own FuseLink
+              Crie seu próprio FuseLink
             </a>
           </div>
         )}

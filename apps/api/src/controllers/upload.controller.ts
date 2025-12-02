@@ -5,7 +5,7 @@ import { AppError } from '../middleware/error.middleware'
 export const uploadFile = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.file) {
-      throw new AppError(400, 'No file uploaded')
+      throw new AppError(400, 'Nenhum arquivo enviado')
     }
 
     const fileUrl = `/uploads/${req.file.filename}`

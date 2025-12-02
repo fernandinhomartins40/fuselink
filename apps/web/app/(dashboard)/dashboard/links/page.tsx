@@ -58,7 +58,7 @@ export default function LinksPage() {
       const response = await linksAPI.getLinks()
       setLinks(response.data.data)
     } catch (error) {
-      toast.error('Failed to load links')
+      toast.error('Falha ao carregar links')
     } finally {
       setLoading(false)
     }
@@ -81,9 +81,9 @@ export default function LinksPage() {
             order: index + 1,
           })),
         })
-        toast.success('Links reordered')
+        toast.success('Links reordenados')
       } catch (error) {
-        toast.error('Failed to reorder links')
+        toast.error('Falha ao reordenar links')
         loadLinks()
       }
     }
@@ -95,29 +95,29 @@ export default function LinksPage() {
     try {
       if (editingLink) {
         await linksAPI.updateLink(editingLink.id, formData)
-        toast.success('Link updated')
+        toast.success('Link atualizado')
       } else {
         await linksAPI.createLink(formData)
-        toast.success('Link created')
+        toast.success('Link criado')
       }
 
       setDialogOpen(false)
       resetForm()
       loadLinks()
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to save link')
+      toast.error(error.response?.data?.message || 'Falha ao salvar link')
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this link?')) return
+    if (!confirm('Tem certeza que deseja excluir este link?')) return
 
     try {
       await linksAPI.deleteLink(id)
-      toast.success('Link deleted')
+      toast.success('Link excluído')
       loadLinks()
     } catch (error) {
-      toast.error('Failed to delete link')
+      toast.error('Falha ao excluir link')
     }
   }
 
@@ -126,7 +126,7 @@ export default function LinksPage() {
       await linksAPI.updateLink(id, { isActive })
       loadLinks()
     } catch (error) {
-      toast.error('Failed to update link')
+      toast.error('Falha ao atualizar link')
     }
   }
 
@@ -168,21 +168,21 @@ export default function LinksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Links</h1>
-          <p className="text-muted-foreground">Manage your links and reorder them by dragging</p>
+          <p className="text-muted-foreground">Gerencie seus links e reordene-os arrastando</p>
         </div>
         <Button onClick={() => openDialog()}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Link
+          Adicionar Link
         </Button>
       </div>
 
       {links.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">No links yet. Create your first link!</p>
+            <p className="text-muted-foreground mb-4">Nenhum link ainda. Crie seu primeiro link!</p>
             <Button onClick={() => openDialog()}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Link
+              Adicionar Link
             </Button>
           </CardContent>
         </Card>
@@ -211,17 +211,17 @@ export default function LinksPage() {
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingLink ? 'Edit Link' : 'Add New Link'}</DialogTitle>
+            <DialogTitle>{editingLink ? 'Editar Link' : 'Adicionar Novo Link'}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">Título *</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="My awesome link"
+                placeholder="Meu link incrível"
                 required
               />
             </div>
@@ -233,23 +233,23 @@ export default function LinksPage() {
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                placeholder="https://example.com"
+                placeholder="https://exemplo.com"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Optional description"
+                placeholder="Descrição opcional"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="icon">Icon (emoji)</Label>
+              <Label htmlFor="icon">Ícone (emoji)</Label>
               <Input
                 id="icon"
                 value={formData.icon}
@@ -260,7 +260,7 @@ export default function LinksPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="priority">Priority Link</Label>
+              <Label htmlFor="priority">Link Prioritário</Label>
               <Switch
                 id="priority"
                 checked={formData.isPriority}
@@ -270,7 +270,7 @@ export default function LinksPage() {
 
             <div className="flex gap-2 pt-4">
               <Button type="submit" className="flex-1">
-                {editingLink ? 'Update' : 'Create'}
+                {editingLink ? 'Atualizar' : 'Criar'}
               </Button>
               <Button
                 type="button"
@@ -280,7 +280,7 @@ export default function LinksPage() {
                   resetForm()
                 }}
               >
-                Cancel
+                Cancelar
               </Button>
             </div>
           </form>

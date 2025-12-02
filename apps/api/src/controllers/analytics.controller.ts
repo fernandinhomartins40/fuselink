@@ -17,7 +17,7 @@ export const trackPageView = async (req: Request, res: Response, next: NextFunct
     const { username } = req.body
 
     if (!username) {
-      throw new AppError(400, 'Username is required')
+      throw new AppError(400, 'Nome de usuário é necessário')
     }
 
     const user = await prisma.user.findUnique({
@@ -26,7 +26,7 @@ export const trackPageView = async (req: Request, res: Response, next: NextFunct
     })
 
     if (!user) {
-      throw new AppError(404, 'User not found')
+      throw new AppError(404, 'Usuário não encontrado')
     }
 
     const userAgent = req.headers['user-agent'] || ''
@@ -61,7 +61,7 @@ export const trackPageView = async (req: Request, res: Response, next: NextFunct
 
     res.status(200).json({
       success: true,
-      message: 'Page view tracked',
+      message: 'Visualização de página rastreada',
       sessionId,
     })
   } catch (error) {
@@ -74,7 +74,7 @@ export const trackLinkClick = async (req: Request, res: Response, next: NextFunc
     const { linkId, timeToClick } = req.body
 
     if (!linkId) {
-      throw new AppError(400, 'Link ID is required')
+      throw new AppError(400, 'ID do link é necessário')
     }
 
     const link = await prisma.link.findUnique({
@@ -82,7 +82,7 @@ export const trackLinkClick = async (req: Request, res: Response, next: NextFunc
     })
 
     if (!link) {
-      throw new AppError(404, 'Link not found')
+      throw new AppError(404, 'Link não encontrado')
     }
 
     const userAgent = req.headers['user-agent'] || ''
@@ -118,7 +118,7 @@ export const trackLinkClick = async (req: Request, res: Response, next: NextFunc
 
     res.status(200).json({
       success: true,
-      message: 'Link click tracked',
+      message: 'Clique no link rastreado',
     })
   } catch (error) {
     next(error)

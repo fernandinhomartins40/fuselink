@@ -43,7 +43,7 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
     })
 
     if (!user) {
-      throw new AppError(404, 'User not found')
+      throw new AppError(404, 'Usuário não encontrado')
     }
 
     res.status(200).json({
@@ -210,11 +210,11 @@ export const getUserByUsername = async (
     })
 
     if (!user) {
-      throw new AppError(404, 'User not found')
+      throw new AppError(404, 'Usuário não encontrado')
     }
 
     if (!user.isPublic && req.userId !== user.id) {
-      throw new AppError(403, 'This profile is private')
+      throw new AppError(403, 'Este perfil é privado')
     }
 
     res.status(200).json({
@@ -238,7 +238,7 @@ export const deleteAccount = async (
 
     res.status(200).json({
       success: true,
-      message: 'Account deleted successfully',
+      message: 'Conta excluída com sucesso',
     })
   } catch (error) {
     next(error)

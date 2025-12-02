@@ -55,7 +55,7 @@ export const updateSocialLink = async (req: AuthRequest, res: Response, next: Ne
     const existing = await prisma.socialLink.findUnique({ where: { id } })
 
     if (!existing || existing.userId !== req.userId) {
-      throw new AppError(404, 'Social link not found')
+      throw new AppError(404, 'Link social não encontrado')
     }
 
     const socialLink = await prisma.socialLink.update({
@@ -79,14 +79,14 @@ export const deleteSocialLink = async (req: AuthRequest, res: Response, next: Ne
     const existing = await prisma.socialLink.findUnique({ where: { id } })
 
     if (!existing || existing.userId !== req.userId) {
-      throw new AppError(404, 'Social link not found')
+      throw new AppError(404, 'Link social não encontrado')
     }
 
     await prisma.socialLink.delete({ where: { id } })
 
     res.status(200).json({
       success: true,
-      message: 'Social link deleted successfully',
+      message: 'Link social excluído com sucesso',
     })
   } catch (error) {
     next(error)

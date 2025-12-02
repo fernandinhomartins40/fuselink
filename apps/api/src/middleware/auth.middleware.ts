@@ -16,7 +16,7 @@ export const authenticate = async (
     const token = req.headers.authorization?.replace('Bearer ', '')
 
     if (!token) {
-      throw new AppError(401, 'Authentication required')
+      throw new AppError(401, 'Autenticação necessária')
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string }
@@ -25,7 +25,7 @@ export const authenticate = async (
     next()
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
-      next(new AppError(401, 'Invalid token'))
+      next(new AppError(401, 'Token inválido'))
     } else {
       next(error)
     }

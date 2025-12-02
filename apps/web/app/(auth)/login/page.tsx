@@ -30,11 +30,11 @@ export default function LoginPage() {
         localStorage.setItem('token', response.data.data.token)
         localStorage.setItem('user', JSON.stringify(response.data.data.user))
 
-        toast.success('Welcome back!')
+        toast.success('Bem-vindo de volta!')
         router.push('/dashboard')
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed')
+      toast.error(error.response?.data?.message || 'Falha no login')
     } finally {
       setLoading(false)
     }
@@ -54,8 +54,8 @@ export default function LoginPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Welcome Back</CardTitle>
-            <CardDescription>Sign in to your FuseLink account</CardDescription>
+            <CardTitle>Bem-vindo de Volta</CardTitle>
+            <CardDescription>Entre na sua conta FuseLink</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,12 +73,12 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Senha</Label>
                   <Link
                     href="/forgot-password"
                     className="text-sm text-primary hover:underline"
                   >
-                    Forgot password?
+                    Esqueceu a senha?
                   </Link>
                 </div>
                 <Input
@@ -95,18 +95,18 @@ export default function LoginPage() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
+                    Entrando...
                   </>
                 ) : (
-                  'Sign In'
+                  'Entrar'
                 )}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm">
-              <span className="text-muted-foreground">Don't have an account? </span>
+              <span className="text-muted-foreground">Não tem uma conta? </span>
               <Link href="/register" className="text-primary hover:underline font-medium">
-                Sign up
+                Cadastre-se
               </Link>
             </div>
           </CardContent>

@@ -62,7 +62,7 @@ app.use('/collections', collectionRoutes)
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
+  res.status(404).json({ success: false, message: 'Rota não encontrada' })
 })
 
 // Error handler

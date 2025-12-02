@@ -60,7 +60,7 @@ export const updateCollection = async (req: AuthRequest, res: Response, next: Ne
     const existing = await prisma.collection.findUnique({ where: { id } })
 
     if (!existing || existing.userId !== req.userId) {
-      throw new AppError(404, 'Collection not found')
+      throw new AppError(404, 'Coleção não encontrada')
     }
 
     const collection = await prisma.collection.update({
@@ -84,14 +84,14 @@ export const deleteCollection = async (req: AuthRequest, res: Response, next: Ne
     const existing = await prisma.collection.findUnique({ where: { id } })
 
     if (!existing || existing.userId !== req.userId) {
-      throw new AppError(404, 'Collection not found')
+      throw new AppError(404, 'Coleção não encontrada')
     }
 
     await prisma.collection.delete({ where: { id } })
 
     res.status(200).json({
       success: true,
-      message: 'Collection deleted successfully',
+      message: 'Coleção excluída com sucesso',
     })
   } catch (error) {
     next(error)
