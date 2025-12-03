@@ -51,7 +51,7 @@ services:
     container_name: fuselink-web
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:${EXTERNAL_PORT:-3200}/api
+      NEXT_PUBLIC_API_URL: http://localhost:${EXTERNAL_PORT:-3200}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-your-nextauth-secret-change-this}
       NEXTAUTH_URL: http://localhost:${EXTERNAL_PORT:-3200}
       PORT: 3000
