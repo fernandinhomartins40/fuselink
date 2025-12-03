@@ -28,10 +28,15 @@ ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
 RUN npx prisma generate --schema=./packages/database/prisma/schema.prisma
 
 # Build the database package
-RUN npm run build --workspace=packages/database
+WORKDIR /app/packages/database
+RUN npm run build
 
 # Build the API
-RUN npm run build --workspace=apps/api
+WORKDIR /app/apps/api
+RUN npm run build
+
+# Return to app root
+WORKDIR /app
 
 # Runner stage
 FROM base AS runner
