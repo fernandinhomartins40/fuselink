@@ -27,6 +27,8 @@ export default function RegisterPage() {
     return {
       minLength: password.length >= 8,
       hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
       hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
       passwordsMatch: formData.password === formData.confirmPassword && formData.confirmPassword !== '',
     }
@@ -35,14 +37,18 @@ export default function RegisterPage() {
   const isPasswordStrong = useMemo(() => {
     return passwordValidation.minLength &&
            passwordValidation.hasUppercase &&
+           passwordValidation.hasLowercase &&
+           passwordValidation.hasNumber &&
            passwordValidation.hasSpecialChar
   }, [passwordValidation])
 
-  // Calculate password strength score (0-3)
+  // Calculate password strength score (0-5)
   const passwordStrength = useMemo(() => {
     let score = 0
     if (passwordValidation.minLength) score++
     if (passwordValidation.hasUppercase) score++
+    if (passwordValidation.hasLowercase) score++
+    if (passwordValidation.hasNumber) score++
     if (passwordValidation.hasSpecialChar) score++
     return score
   }, [passwordValidation])
@@ -50,8 +56,10 @@ export default function RegisterPage() {
   // Get strength label and color
   const getStrengthInfo = (strength: number) => {
     if (strength === 0) return { label: 'Muito fraca', color: 'bg-red-500', width: '0%' }
-    if (strength === 1) return { label: 'Fraca', color: 'bg-red-500', width: '33%' }
-    if (strength === 2) return { label: 'Média', color: 'bg-yellow-500', width: '66%' }
+    if (strength === 1) return { label: 'Muito fraca', color: 'bg-red-500', width: '20%' }
+    if (strength === 2) return { label: 'Fraca', color: 'bg-orange-500', width: '40%' }
+    if (strength === 3) return { label: 'Média', color: 'bg-yellow-500', width: '60%' }
+    if (strength === 4) return { label: 'Boa', color: 'bg-lime-500', width: '80%' }
     return { label: 'Forte', color: 'bg-green-500', width: '100%' }
   }
 
@@ -152,8 +160,10 @@ export default function RegisterPage() {
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground">Força da senha:</span>
                         <span className={`font-medium ${
-                          passwordStrength === 3 ? 'text-green-600' :
-                          passwordStrength === 2 ? 'text-yellow-600' :
+                          passwordStrength === 5 ? 'text-green-600' :
+                          passwordStrength === 4 ? 'text-lime-600' :
+                          passwordStrength === 3 ? 'text-yellow-600' :
+                          passwordStrength === 2 ? 'text-orange-600' :
                           'text-red-600'
                         }`}>
                           {getStrengthInfo(passwordStrength).label}
@@ -187,6 +197,26 @@ export default function RegisterPage() {
                         )}
                         <span className={passwordValidation.hasUppercase ? 'text-green-600' : 'text-muted-foreground'}>
                           Uma letra maiúscula
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {passwordValidation.hasLowercase ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
+                        <span className={passwordValidation.hasLowercase ? 'text-green-600' : 'text-muted-foreground'}>
+                          Uma letra minúscula
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        {passwordValidation.hasNumber ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-red-500" />
+                        )}
+                        <span className={passwordValidation.hasNumber ? 'text-green-600' : 'text-muted-foreground'}>
+                          Um número
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-xs">
